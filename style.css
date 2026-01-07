@@ -1,0 +1,450 @@
+
+@font-face {
+  font-family: "Atacama";
+  src: url("./fonts/Atacama-Condensed.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+:root {
+  /* pill */
+  --pill-w: 280px;
+  --pill-h: 90px;
+  --pill-r: 999px;
+
+  /* type */
+  --font: "Atacama", ui-serif, Georgia, serif;
+  --size: 56px;
+  --tracking: -0.04em;
+  --color: rgba(10, 10, 10, 0.88);
+
+  /* list */
+  --row: var(--pill-h);
+  --items: 7;
+
+  /* padding rows present in your HTML list */
+  --pad: 2;
+
+  /* per-layer pad override (defaults to --pad) */
+  --pad-local: var(--pad);
+
+  /* animation */
+  --hold: 1s;
+  --move: 2s;
+  --step: calc(var(--hold) + var(--move));
+  --duration: calc(var(--items) * var(--step));
+
+  /* background */
+  --bg-w: 720px;
+
+  /* mask feathering */
+  --feather: calc(var(--row) * 0.35);
+
+  /* I'm so sick of changing this shit so */
+  --edge-band: 12px;     /* solid distortion band at very top and bottom */
+  --edge-feather: 10px;  /* how softly it fades out */
+  --seam-gap: 6px;
+}
+
+/* ===============================
+   BASE
+   =============================== */
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  display: grid;
+  place-items: center;
+  background: #ffffff;
+}
+
+/* ===============================
+   STAGE
+   =============================== */
+
+.case2 {
+  position: relative;
+  width: min(980px, 92vw);
+  height: 420px;
+  overflow: hidden;
+}
+
+/* ===============================
+   STACKS
+   =============================== */
+
+.case2-stack {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--pill-w);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* All tracks use the same keyframes.
+   The per-layer offset comes from --pad-local (set below). */
+.case2-track {
+  animation: case2-step var(--duration) infinite linear;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+/* ===============================
+   WORDS
+   =============================== */
+
+.case2-word {
+  height: var(--row);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-family: var(--font);
+  font-size: var(--size);
+  letter-spacing: var(--tracking);
+  color: var(--color);
+
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ===============================
+   BACKGROUND DEPTH
+   =============================== */
+
+.case2-stack--bg1,
+.case2-stack--bg2,
+.case2-stack--bgFar {
+  width: var(--bg-w);
+
+  /* IMPORTANT: background was 2 rows ahead.
+     This shifts background DOWN by 2 rows relative to the pill by changing the animation start offset. */
+  --pad-local: 0;
+}
+
+/* depth levels */
+.case2-stack--bg1 {
+  z-index: 1;
+  opacity: 0.36;
+  filter: blur(6px);
+  transform: translate(-50%, -50%) scale(0.92);
+}
+
+.case2-stack--bg2 {
+  z-index: 0;
+  opacity: 0.26;
+  filter: blur(10px);
+  transform: translate(-50%, -50%) scale(0.84);
+}
+
+.case2-stack--bgFar {
+  z-index: 0;
+  opacity: 0.14;
+  filter: blur(14px);
+  transform: translate(-50%, -50%) scale(0.78);
+}
+
+/* ===============================
+   BACKGROUND VIEWPORT MASK
+   (If your HTML includes .case2-bgViewport)
+   =============================== */
+
+.case2-bgViewport {
+  height: calc(5 * var(--row)); /* 2 above + center + 2 below */
+  overflow: hidden;
+
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black var(--feather),
+    black calc(100% - var(--feather)),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black var(--feather),
+    black calc(100% - var(--feather)),
+    transparent 100%
+  );
+}
+
+/* ===============================
+   PILL
+   =============================== */
+
+.case2-pill {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--pill-w);
+  height: var(--pill-h);
+  transform: translate(-50%, -50%);
+  border-radius: var(--pill-r);
+  overflow: hidden;
+  isolation: isolate;
+  z-index: 10;
+
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.14),
+    0 8px 18px rgba(0, 0, 0, 0.1);
+}
+
+.case2-pill::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  z-index: 20;
+  pointer-events: none;
+
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.42),
+    inset 1px 0 0 rgba(255, 80, 80, 0.09),
+    inset -1px 0 0 rgba(90, 170, 255, 0.09);
+}
+
+/* ===============================
+   GLASS LAYERS
+   =============================== */
+
+.liquidGlass-wrapper {
+  position: relative;
+}
+
+.liquidGlass-effect {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  filter: url(#glass-distortion);
+}
+
+.liquidGlass-tint {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.liquidGlass-shine {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  box-shadow:
+    inset 2px 2px 1px rgba(255, 255, 255, 0.55),
+    inset -2px -2px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* ===============================
+   PILL WORD LAYERS
+   =============================== */
+
+.case2-stack--edge,
+.case2-stack--center {
+  inset: 0;
+  width: 100%;
+  transform: none;
+
+  /* pill uses the real pad rows */
+  --pad-local: var(--pad);
+}
+
+/* edge distortion only at top & bottom */
+.case2-stack--edge {
+  z-index: 6;
+  filter: url(#edge-distortion) blur(0.6px);
+  opacity: 0.8;
+
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    black 14%,
+    transparent 28%,
+    transparent 72%,
+    black 86%,
+    black 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    black 0%,
+    black 14%,
+    transparent 28%,
+    transparent 72%,
+    black 86%,
+    black 100%
+  );
+}
+
+.case2-stack--edge .case2-word {
+  text-shadow:
+    0.7px 0 rgba(255, 80, 80, 0.22),
+    -0.7px 0 rgba(90, 170, 255, 0.22);
+}
+
+/* crisp center */
+.case2-stack--center {
+  z-index: 7;
+
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 18%,
+    black 82%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 18%,
+    black 82%,
+    transparent 100%
+  );
+}
+
+/* ===============================
+   ANIMATION
+   Uses --pad-local so backgrounds and pill can be offset independently.
+   =============================== */
+
+@keyframes case2-step {
+  /* STEP 0 hold */
+  0%,
+  10% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 0)));
+  }
+
+  /* STEP 0 move: fast -> slow(edge) -> fast */
+  10.857% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 0.35)));
+  }
+  13.428% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 0.65)));
+  }
+  14.285% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 1)));
+  }
+
+  /* STEP 1 hold */
+  14.285%,
+  24.285% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 1)));
+  }
+
+  /* STEP 1 move */
+  25.142% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 1.35)));
+  }
+  27.999% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 1.65)));
+  }
+  28.57% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 2)));
+  }
+
+  /* STEP 2 hold */
+  28.57%,
+  38.57% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 2)));
+  }
+
+  /* STEP 2 move */
+  39.427% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 2.35)));
+  }
+  41.998% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 2.65)));
+  }
+  42.855% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 3)));
+  }
+
+  /* STEP 3 hold */
+  42.855%,
+  52.855% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 3)));
+  }
+
+  /* STEP 3 move */
+  53.712% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 3.35)));
+  }
+  56.283% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 3.65)));
+  }
+  57.14% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 4)));
+  }
+
+  /* STEP 4 hold */
+  57.14%,
+  67.14% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 4)));
+  }
+
+  /* STEP 4 move */
+  67.997% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 4.35)));
+  }
+  70.568% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 4.65)));
+  }
+  71.425% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 5)));
+  }
+
+  /* STEP 5 hold */
+  71.425%,
+  81.425% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 5)));
+  }
+
+  /* STEP 5 move */
+  82.282% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 5.35)));
+  }
+  84.853% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 5.65)));
+  }
+  85.71% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 6)));
+  }
+
+  /* STEP 6 hold */
+  85.71%,
+  95.71% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 6)));
+  }
+
+  /* STEP 6 move */
+  96.568% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 6.35)));
+  }
+  99.142% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + 6.65)));
+  }
+  100% {
+    transform: translateY(calc(-1 * var(--row) * (var(--pad-local) + var(--items))));
+  }
+}
+
+
+/* ===============================
+   REDUCED MOTION
+   =============================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .case2-track {
+    animation: none;
+  }
+}
